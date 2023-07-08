@@ -5,11 +5,11 @@ pipeline{
     stages{
         stage("Installing puppet-agent"){
             steps{
-                sh "sudo apt-get install puppet-agent"
+                sh "sudo apt-get install puppet-agent -y"
             }
         }
         stage("Docker installation on slave node"){
-            agent {
+            agent{
                 label 'master'
             }
             steps{
@@ -22,12 +22,23 @@ pipeline{
                 }
             }
         }
-        // stage("Docker build and deploy"){
-        //     steps{
-        //         script{
-                    
-        //         }
-        //     }
-        // }
+        stage("Docker build and deploy"){
+            steps{
+                script{
+                    sh """
+                        docker build . -t website:php-app
+                        [ "$(docker ps -a | grep php_app)" ] && docker rm -f php_app || echo "No existing container found"
+                        docker run -d --name php_app website:php-app
+                    """
+                }
+            }
+            post{
+                failure{
+                    sh """
+                        docker rm php_app -f
+                    """
+                }
+            }
+        }
     }
 }
