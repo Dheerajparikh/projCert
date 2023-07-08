@@ -27,7 +27,7 @@ pipeline{
                 script{
                     sh """
                         docker build . -t website:php-app
-                        [ "$(docker ps -a | grep php_app)" ] && docker rm -f php_app || echo "No existing container found"
+                        [ "`docker ps -a | grep php_app`" ] && docker rm -f php_app || echo "No existing container found"
                         docker run -d --name php_app website:php-app
                     """
                 }
