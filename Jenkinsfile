@@ -26,16 +26,16 @@ pipeline{
             steps{
                 script{
                     sh """
-                        docker build . -t website:php-app
+                        sudo docker build . -t website:php-app
                         [ "`docker ps -a | grep php_app`" ] && docker rm -f php_app || echo "No existing container found"
-                        docker run -d --name php_app website:php-app
+                        sudo docker run -d --name php_app website:php-app
                     """
                 }
             }
             post{
                 failure{
                     sh """
-                        docker rm php_app -f
+                        sudo docker rm php_app -f
                     """
                 }
             }
