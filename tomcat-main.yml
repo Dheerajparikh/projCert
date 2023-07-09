@@ -1,0 +1,82 @@
+- name: apt-update
+  apt:
+     update_cache: yes
+     upgrade: yes
+
+- name: install default-jdk
+  apt:
+     name: default-jdk
+     state: present
+
+- name: groupadd tomcat
+  group:
+     name: tomcat
+     state: present
+
+- name: user tomcat
+  user:
+     name: tomcat
+     state: present
+     shell: /bin/false
+     groups: tomcat
+     createhome: yes
+     home: /opt/tomcat
+
+- name: wget
+  get_url:
+     url: http://redrockdigimark.com/apachemirror/tomcat/tomcat-8/v8.5.31/bin/apache-tomcat-8.5.31.tar.gz
+     dest: /opt
+
+- name: create_dir
+  file:
+     path: /opt/tomcat
+     state: directory    
+
+- name: unzip the file
+  unarchive:
+     src: /opt/apache-tomcat-8.5.31.tar.gz
+     dest: /opt/tomcat
+     remote_src: yes
+
+- name: change-group
+  file:
+     path: /opt/tomcat
+     state: directory
+     group: tomcat
+     recurse: yes
+
+- name: change-group-chown 
+  file:
+     path: /opt/tomcat/conf
+     state: directory
+     mode: "g+r"
+     recurse: yes
+
+- name: change-group-executable permisstion
+  file:
+     path: /opt/tomcat/conf
+     state: directory
+     mode: "g+x"
+
+- name: ownership
+  file:
+     path: "{{ item }}"
+     owner: tomcat
+     recurse: yes
+  loop:
+     - /opt/tomcat/webapps
+     - /opt/tomcat/work
+     - /opt/tomcat/temp
+     - /opt/tomcat/logs
+
+- name: copy-serviceFile
+  copy:
+     src: /opt/tomcat.service
+     dest: /etc/systemd/system/tomcat.service
+
+- name: copy-serviceFile
+  systemd:
+     daemon_reload: yes
+     name: tomcat.service 
+     state: started
+     enabled: yes   
